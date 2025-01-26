@@ -260,7 +260,9 @@
     </div>
     <div class="form-container" style="padding: 0; background-color: transparent; display: flex; border: none;">
         <a class="back-btn" href="../">Home</a>
-        <button id="submitButton" class="submit-button" onclick="downloadFile()" disabled>Submit</button>
+        <form action="/submit" method="POST"></form>
+        <button type="submit" id="submitButton" class="submit-button" onclick="downloadFile()" disabled>Submit</button>
+        </form>
     </div>
     <script>
         // Function to check if all required fields are filled
