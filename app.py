@@ -1,5 +1,10 @@
-from flask import Flask, render_template, request
+import os
 import subprocess
+import webbrowser
+from flask import Flask, render_template, request
+from threading import Thread
+import time
+
 
 app = Flask(__name__)
 
@@ -39,6 +44,18 @@ def submit():
 
     return "Form submitted successfully and bash script executed!"
 
+def run_flask():
+    # Start Flask server
+    app.run(host='localhost', port=8080)
+
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=8080)
+    # Run Flask app in a separate thread
+    thread = Thread(target=run_flask)
+    thread.start()
+
+    # Wait a bit to ensure the server is running before opening the browser
+    time.sleep(1)
+
+    # Automatically open the browser
+    webbrowser.open('http://localhost:8080')
