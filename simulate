@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Load parameters from parameters.sh
+source parameters.sh
+
+# Fetch the PDB file based on the input PDB ID
+echo "Fetching PDB file for $pdb_id..."
+wget "https://files.rcsb.org/download/$pdb_id.pdb" -O "$pdb_id.pdb"
+
+# Now, perform the simulation and solvate the protein using GROMACS or your desired tool
+
+# Example GROMACS commands for protein solvation
+echo "Running GROMACS simulation preparation..."
+
+# Prepare the protein structure (convert to .gro format if needed, and solvate)
+gmx pdb2gmx -f "$pdb_id.pdb" -o "protein.gro" -ff "$forcefield" -water "$water_model"
+gmx editconf -f "protein.gro" -o "newbox.gro" -c -d 1.0 -bt "$box_type"
+
+# Solvate the system
+gmx solvate -cp "newbox.gro" -cs spc216.gro -o "solv.gro" -p topol.top
+
+# Add ions (optional)
+gmx genion -s ions.tpr -o "solv_ions.gro" -p topol.top -pname NA -nname CL -neutral
+
+# Minimize the energy of the system
+gmx grompp -f em.mdp -c "solv_ions.gro" -p topol.top -o em.tpr
+gmx mdrun -v -deffnm em
+
+# Equilibrate the system
+gmx grompp -f nvt.mdp -c em.gro -r em.gro -p topol.top -o nvt.tpr
+gmx mdrun -deffnm nvt
+
+# Production simulation
+gmx grompp -f md.mdp -c nvt.gro -p topol.top -o md.tpr
+gmx mdrun -deffnm md
+
+# Save the processed protein structure file (.pdb) for download
+echo "Saving processed PDB file for download..."
+gmx trjconv -s md.tpr -f md.xtc -o "protein_processed.pdb"
+
+# Optionally, move the generated protein files to the download folder
+# mv "protein_processed.pdb" ../protein_files/
+
+echo "Simulation and file generation complete."
