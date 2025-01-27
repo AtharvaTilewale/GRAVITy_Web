@@ -4,6 +4,7 @@ import webbrowser
 from flask import Flask, render_template, request
 from threading import Thread
 import time
+import socket
 
 
 app = Flask(__name__)
@@ -38,16 +39,30 @@ def submit():
 
     # Run a bash script (for example, 'myscript.sh')
     try:
-        subprocess.run(['bash', 'simulate.sh'], check=True)
+        subprocess.run(['bash', 'simulate'], check=True)
     except subprocess.CalledProcessError as e:
         return f"An error occurred while executing the script: {e}"
 
-    return "Form submitted successfully and bash script executed!"
+    return render_template('complete.html')
+
+def get_local_ip():
+    # Get the local IP address of the device
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        # Connect to an outside server to get the local address
+        s.connect(('10.254.254.254', 1))  # You can use any unreachable IP to force socket to choose the correct interface
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'  # Fallback to localhost if unable to fetch IP
+    finally:
+        s.close()
+    return ip
 
 def run_flask():
-    # Start Flask server
-    app.run(host='localhost', port=8080)
-
+    local_ip = get_local_ip()  # Get the local IP address
+    print(f"Starting Flask app on {local_ip}:8080")  # Print the IP address to the console
+    app.run(host=local_ip, port=8080)  # Bind the Flask app to the local IP
 
 if __name__ == '__main__':
     # Run Flask app in a separate thread
@@ -57,5 +72,6 @@ if __name__ == '__main__':
     # Wait a bit to ensure the server is running before opening the browser
     time.sleep(1)
 
-    # Automatically open the browser
-    webbrowser.open('http://localhost:8080')
+    # Automatically open the browser, using the dynamic IP address
+    local_ip = get_local_ip()
+    webbrowser.open(f'http://{local_ip}:8080')  # Open the browser with the dynamic IP address
