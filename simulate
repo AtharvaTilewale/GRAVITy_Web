@@ -9,6 +9,7 @@ BLUE='\033[34m'
 CYAN='\033[36m'
 
 source /etc/GRAVITy/colors
+source parameters.sh
 
 #check internet connection
 check_internet() {
