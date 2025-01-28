@@ -32,7 +32,7 @@ def submit():
         file.write(f"forcefield={forcefield}\n")
         file.write(f"water_model={water_model}\n")
         file.write(f"box_type={box_type}\n")
-        file.write(f"Concentration={concentration}\n")
+        file.write(f"concentration={concentration}\n")
         file.write(f"equilibration_time={equilibration_time}\n")
         file.write(f"sim_time={sim_time}\n")
         file.write(f"sim_frames={sim_frames}\n")
