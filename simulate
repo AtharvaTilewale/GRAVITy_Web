@@ -336,7 +336,7 @@ generate_protein_topology() {
 
 # Function to define box and solvate the system
 define_box_and_solvate() {
-    gmx editconf -f protein.gro -o newbox.gro -c -d 1.0 -bt $box_typet >/dev/null 2>&1
+    gmx editconf -f protein.gro -o newbox.gro -c -d 1.0 -bt $box_type >/dev/null 2>&1
     # box_loader
     if [ $? -ne 0 ]; then
         echo "Error in gmx editconf. Check editconf.log for details."
@@ -385,15 +385,15 @@ add_ions() {
 energy_minimization() {
     # Check if necessary files exist
     if [[ ! -f "minim.mdp" ]]; then
-        echo -e "${LIGHT_RED}Error: minim.mdp not found in $project_dir.${NC}"
+        echo -e "${LIGHT_RED}Error: minim.mdp not found in directory.${NC}"
         exit 1
     fi
     if [[ ! -f "solv_ions.gro" ]]; then
-        echo -e "${LIGHT_RED}Error: solv_ions.gro not found in $project_dir.${NC}"
+        echo -e "${LIGHT_RED}Error: solv_ions.gro not found in directory.${NC}"
         exit 1
     fi
     if [[ ! -f "topol.top" ]]; then
-        echo -e "${LIGHT_RED}Error: topol.top not found in $project_dir.${NC}"
+        echo -e "${LIGHT_RED}Error: topol.top not found in directory.${NC}"
         exit 1
     fi
 
