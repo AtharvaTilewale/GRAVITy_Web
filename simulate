@@ -239,17 +239,6 @@ equilibration_loader() {
     fi
 }
 
-#check internet connection
-check_internet() {
-    if ping -c 1 -W 1 8.8.8.8 &>/dev/null; then
-        echo -e "Status [${LIGHT_GREEN}Online${NC}]"
-    else
-        echo -e "Status [${LIGHT_RED}Offline${NC}]"
-        echo -e "${LIGHT_RED}It is recommended to connect to the internet while process is going on."
-        echo -e "If any dependencies are missing then you may not able to download.${NC}"
-    fi
-}
-
 # Check if pdbid variable is set and not empty
 check_pdbid() {
     if [[ -z "$pdb_id" ]]; then
@@ -319,7 +308,6 @@ generate_protein_topology() {
         fi
 
         # Retry GROMACS pdb2gmx after fixing the PDB
-        # echo -e "${CYAN}Retrying topology generation with fixed PDB...${NC}"
         gmx pdb2gmx -f "protein.pdb" -o "protein.gro" -ff "$forcefield" -water "$watermodel" -ignh >/dev/null 2>&1 &
         pid_retry_gmx=$! # Store PID for retry
         auto_task_spinner $pid_retry_gmx "             Regenerating Protein Topology"
@@ -431,8 +419,39 @@ NPT_equilibration() {
     echo
 }
 
+update_eq_steps() {
+    local equilibration_time=$1  # Get equilibration time (ps)
+    local time_step=$2  # Get time step (fs)
+
+    # Files to update
+    nvt_mdp="nvt.mdp"
+    npt_mdp="npt.mdp"
+
+    # Calculate steps
+    local steps=$(( (equilibration_time * 1000) / time_step ))
+
+    # Update NVT MDP file
+    if [[ -f "$nvt_mdp" ]]; then
+        sed -i "s/^nsteps.*/nsteps = $steps/" "$nvt_mdp"
+        echo "Updated $nvt_mdp: nsteps = $steps"
+    else
+        echo "Error: $nvt_mdp not found!"
+    fi
+
+    # Update NPT MDP file
+    if [[ -f "$npt_mdp" ]]; then
+        sed -i "s/^nsteps.*/nsteps = $steps/" "$npt_mdp"
+        echo "Updated $npt_mdp: nsteps = $steps"
+    else
+        echo "Error: $npt_mdp not found!"
+    fi
+}
+
 # Function to run equilibrium
 equilibrium() {
+    # Call function with user inputs
+    time_step="2"
+    update_eq_steps "$equilibration_time" "$time_step"
     NVT_equilibration
     if [[ $? -ne 0 ]]; then
         echo -e "${LIGHT_RED}Error: NVT equilibration failed.${NC}"
@@ -447,8 +466,30 @@ equilibrium() {
     fi
 }
 
+update_md_steps() {
+    local sim_time=$1  # Get production MD time (ns)
+    local time_step=$2  # Get time step (fs)
+
+    # MD parameter file
+    md_mdp="md.mdp"
+
+    # Calculate steps
+    local sim_steps=$(( (sim_time * 1000000) / time_step ))  # Convert ns to fs and divide by time step
+
+    # Update MD MDP file
+    if [[ -f "$md_mdp" ]]; then
+        sed -i "s/^nsteps.*/nsteps = $sim_steps/" "$md_mdp"
+    else
+        echo "Error: $md_mdp not found!"
+    fi
+}
+
 # Function to run production MD
 production_md() {
+    # Call function with user inputs
+    time_step="2"
+    update_md_steps "$sim_time" "$time_step"
+
     if [[ -n "$gpu_info" ]]; then
 
         # Check for NVIDIA GPU and nvidia-smi
