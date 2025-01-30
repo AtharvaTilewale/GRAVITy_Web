@@ -261,6 +261,271 @@ check_pdbid() {
     fi
 }
 
+#Main Function Starts Here 
+download_protein() {
+    (wget -q "https://files.rcsb.org/download/${pdb_id}.pdb" -O protein.pdb) &
+    $pid=$!
+    wait $pid
+}
+
+# Function to fix PDB file using PDBFixer
+pdb_fixer() {
+    echo
+    if check_internet && check_pdbid; then
+        pdbfixer --pdbid="$pdb_id" --keep-heterogens=none --add-residues --replace-nonstandard --add-atoms=all --ph=7.0 --output=protein.pdb --verbose >/dev/null 2>&1 &
+        pdbfix_loader
+    elif [[ -f "protein.pdb" ]]; then
+        pdbfixer protein.pdb --keep-heterogens=none --add-residues --replace-nonstandard --add-atoms=all --ph=7.0 --output=protein.pdb --verbose >/dev/null 2>&1 &
+        pdbfix_loader
+    else
+        echo -e "${LIGHT_RED}Neither protein.pdb file found nor PDBID provided${NC}"
+    fi
+}
+
+# Function to remove HETATM lines
+remove_hetatm() {
+    if grep -q "HETATM" protein.pdb; then
+        # echo "Removing HETATM entries from protein.pdb..."
+        sed -i '/^HETATM/d' protein.pdb
+    fi
+}
+
+# Function to generate protein topology
+generate_protein_topology() {
+    # Remove hetatm if needed
+    remove_hetatm
+
+    # Run GROMACS pdb2gmx in the background and track it with a spinner
+    gmx pdb2gmx -f "protein.pdb" -o "protein.gro" -ff "$forcefield" -water "$watermodel" -ignh >/dev/null 2>&1 &
+    pid_gmx=$! # Store PID of the background task
+    auto_task_spinner $pid_gmx "Step 2 of 7: Generating Protein Topology"
+
+    # Check the exit status of pdb2gmx
+    wait $pid_gmx
+    local exit_status=$?
+
+    if [[ $exit_status -ne 0 ]]; then
+        # If pdb2gmx failed, try fixing the PDB with pdbfixer
+        pdb_fixer >/dev/null 2>&1 &
+        pid_fixer=$! # Store PID of the background task
+        auto_task_spinner $pid_fixer "             Fixing PDB file"
+
+        # Check if pdbfixer was successful
+        wait $pid_fixer
+        local fixer_exit_status=$?
+        if [[ $fixer_exit_status -ne 0 ]]; then
+            echo -e "${LIGHT_RED}Error: PDB fixer failed. Exiting.${NC}"
+            exit 1
+        fi
+
+        # Retry GROMACS pdb2gmx after fixing the PDB
+        # echo -e "${CYAN}Retrying topology generation with fixed PDB...${NC}"
+        gmx pdb2gmx -f "protein.pdb" -o "protein.gro" -ff "$forcefield" -water "$watermodel" -ignh >/dev/null 2>&1 &
+        pid_retry_gmx=$! # Store PID for retry
+        auto_task_spinner $pid_retry_gmx "             Regenerating Protein Topology"
+
+        # Check if the retry was successful
+        wait $pid_retry_gmx
+        exit_status=$?
+        if [[ $exit_status -ne 0 ]]; then
+            echo -e "${LIGHT_RED}Error: Topology generation failed after fixing PDB.${NC}"
+            exit 1
+        fi
+    fi
+}
+
+# Function to define box and solvate the system
+define_box_and_solvate() {
+    gmx editconf -f protein.gro -o newbox.gro -c -d 1.0 -bt $box_typet >/dev/null 2>&1
+    # box_loader
+    if [ $? -ne 0 ]; then
+        echo "Error in gmx editconf. Check editconf.log for details."
+        exit 1
+    fi
+
+    gmx solvate -cp newbox.gro -cs spc216.gro -p topol.top -o solv.gro >/dev/null 2>&1
+    # solvate_loader
+    if [ $? -ne 0 ]; then
+        echo "Error in gmx solvate. Check solvate.log for details."
+        exit 1
+    fi
+}
+
+# Function to add ions
+add_ions() {
+    if [ ! -f "solv.gro" ]; then
+        echo -e "${LIGHT_RED}Error: solv.gro file does not exist. Exiting.${NC}"
+        exit 1
+    fi
+    if [ ! -f "ions.mdp" ]; then
+        echo -e "${LIGHT_RED}Error: ions.mdp file does not exist. Downloading...${NC}"
+        wget -q -nc "http://www.mdtutorials.com/gmx/lysozyme/Files/ions.mdp" -O "ions.mdp"
+        if [ $? -ne 0 ]; then
+            echo -e "${LIGHT_RED}Error: Failed to download ions.mdp. Exiting.${NC}"
+            exit 1
+        fi
+    fi
+
+    gmx grompp -f "ions.mdp" -c "solv.gro" -p "topol.top" -o "ions.tpr" >/dev/null 2>&1
+
+    if [ $? -ne 0 ]; then
+        gmx grompp -f "ions.mdp" -c "solv.gro" -p "topol.top" -o "ions.tpr" -debug >/dev/null 2>&1
+        exit 1
+    fi
+
+    # Run genion to add ions
+    printf "13\n" | gmx genion -s "ions.tpr" -o "solv_ions.gro" -p "topol.top" -pname NA -nname CL -neutral >/dev/null 2>&1
+
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+}
+
+# Function to run energy minimization
+energy_minimization() {
+    # Check if necessary files exist
+    if [[ ! -f "minim.mdp" ]]; then
+        echo -e "${LIGHT_RED}Error: minim.mdp not found in $project_dir.${NC}"
+        exit 1
+    fi
+    if [[ ! -f "solv_ions.gro" ]]; then
+        echo -e "${LIGHT_RED}Error: solv_ions.gro not found in $project_dir.${NC}"
+        exit 1
+    fi
+    if [[ ! -f "topol.top" ]]; then
+        echo -e "${LIGHT_RED}Error: topol.top not found in $project_dir.${NC}"
+        exit 1
+    fi
+
+    # Prepare the system for energy minimization
+    gmx grompp -f "minim.mdp" -c "solv_ions.gro" -p "topol.top" -o "em.tpr" >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+
+    # Run energy minimization
+    gmx mdrun -v -deffnm "em" >/dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        echo -e "${LIGHT_RED}Error: mdrun failed. Check mdrun.log for details.${NC}"
+        exit 1
+    fi
+}
+
+NVT_equilibration() {
+    equilibration_step_name="NVT equilibration"
+    gmx grompp -f nvt.mdp -c em.gro -r em.gro -p topol.top -o nvt.tpr >/dev/null 2>&1 &
+    equilibration_preparation_loader
+    echo
+    gmx mdrun -deffnm nvt -v >/dev/null 2>&1 &
+    equilibration_loader
+    echo
+}
+
+NPT_equilibration() {
+    equilibration_step_name="NPT equilibration"
+    gmx grompp -f npt.mdp -c nvt.gro -r nvt.gro -t nvt.cpt -p topol.top -o npt.tpr >/dev/null 2>&1 &
+    equilibration_preparation_loader
+    echo
+    gmx mdrun -deffnm npt -v >/dev/null 2>&1 &
+    equilibration_loader
+    echo
+}
+
+# Function to run equilibrium
+equilibrium() {
+    NVT_equilibration
+    if [[ $? -ne 0 ]]; then
+        echo -e "${LIGHT_RED}Error: NVT equilibration failed.${NC}"
+        exit 1
+    fi
+    echo -e "${LIGHT_GREEN}NVT equilibration completed successfully.${NC}"
+
+    NPT_equilibration
+    if [[ $? -ne 0 ]]; then
+        echo -e "${LIGHT_RED}Error: NPT equilibration failed.${NC}"
+        exit 1
+    fi
+}
+
+# Function to run production MD
+production_md() {
+    if [[ -n "$gpu_info" ]]; then
+
+        # Check for NVIDIA GPU and nvidia-smi
+        if command -v nvidia-smi &>/dev/null; then
+            nvidia-smi
+            sleep 3
+
+            run_mode="GPU"
+            run_cmd="gmx mdrun -deffnm md -v -nb gpu"
+        else
+            run_mode="CPU"
+            run_cmd="gmx mdrun -deffnm md -v"
+        fi
+    else
+        run_mode="CPU"
+        run_cmd="gmx mdrun -deffnm md -v"
+        run_mode="CPU"
+    fi
+    gmx grompp -f md.mdp -c npt.gro -t npt.cpt -p topol.top -o md.tpr
+
+    eval "$run_cmd >/dev/null 2>&1 &"
+    $pid=$!
+    wait $pid
+    run_mode="CPU"
+    
+    #Recentering and Rewrapping Coordinates...
+    if [ ! -f "md.xtc" ]; then
+        exit 1
+    fi
+    printf "1 0\n" | gmx trjconv -s md.tpr -f md.xtc -o md_noPBC.xtc -pbc mol -center || exit 1
+
+    #Finding RMSD...
+    if [ ! -f "md_noPBC.xtc" ]; then
+        exit 1
+    fi
+    printf "4 4\n" | gmx rms -s md.tpr -f md_noPBC.xtc -o rmsd.xvg -tu ns || exit 1
+}
+
+automatic_run() {
+    # Step 1: Download protein
+    download_protein >/dev/null 2>&1 &
+    auto_task_spinner $! "Step 1 of 7: Downloading protein structure"
+
+    # Step 2: Generate protein topology
+    generate_protein_topology
+
+    # Step 3: Define box and solvate the system
+    define_box_and_solvate >/dev/null 2>&1 &
+    auto_task_spinner $! "Step 3 0f 7: Define Box and Solvate the System"
+
+    # Step 4: Add ions to system
+    add_ions >/dev/null 2>&1 &
+    auto_task_spinner $! "Step 4 0f 7: Add ions to system"
+
+    # Step 5: Energy minimization
+    energy_minimization >/dev/null 2>&1 &
+    auto_task_spinner $! "Step 5 0f 7: Minimize energy"
+
+    # Step 6: Equilibrate system
+    equilibrium >/dev/null 2>&1 &
+    auto_task_spinner $! "Step 6 0f 7: Equilibrate system"
+
+    # Step 7: Run MD Simulation
+    start_time=$(date +%s)
+    production_md >/dev/null 2>&1 &
+    auto_task_spinner $! "Step 7 0f 7: Run MD Simulation"
+
+    # Calculate total time taken for the simulation
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    echo
+    echo -e "${LIGHT_CYAN}Simulation completed on $run_mode.${NC}"
+    echo "Elapsed time: $elapsed seconds"
+    echo
+    sleep 1.0
+}
+
 banner() {
     # Main script loop
     clear
@@ -294,4 +559,4 @@ echo
 check_dependencies
 echo -e "${LIGHT_CYAN}Simulation type: Protein in water${NC}"
 echo
-loader $sim_pid
+automatic_run
