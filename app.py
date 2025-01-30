@@ -11,6 +11,10 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    return render_template('index.html')
+
+@app.route('/simulate')
+def simulate():
     return render_template('simulate.html')
 
 @app.route('/submit', methods=['POST'])
