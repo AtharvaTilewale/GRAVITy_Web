@@ -54,6 +54,213 @@ loader() {
     echo -ne "\r${GREEN}Done! Simulation complete.${RESET}           \n"
 }
 
+# Function to stop the spinner if an error occurs
+stop_spinner() {
+    if [ ! -z "$spinner_pid" ]; then
+        kill $spinner_pid
+    fi
+}
+
+# Function to display a rotating loader with custom text
+show_spinner() {
+    local pid=$1      # Process ID to monitor
+    local message=$2  # Custom loading message
+    local spin='-\|/' # Spinner characters
+    local i=0
+
+    # Loop to display the spinner until the task completes
+    while kill -0 $pid 2>/dev/null; do
+        i=$(((i + 1) % 4))
+        printf "\r${spin:$i:1} %s..." "$message"
+        sleep 0.1
+    done
+    printf "\r%s...        \n" "$message"
+}
+
+auto_task_spinner() {
+    local pid=$1
+    local task=$2
+    local symbols=("|" "/" "-" "\\")
+    local i=0
+
+    # Check if the PID is valid before attempting to wait
+    if ! kill -0 $pid 2>/dev/null; then
+        echo "Error: Invalid PID $pid"
+        return 1
+    fi
+
+    # Show the spinning loader while the process is running
+    while kill -0 $pid 2>/dev/null; do
+        printf "%-50s [${symbols[$((i % 4))]}]\r" "$task"
+        sleep 0.1
+        ((i++))
+    done
+
+    # Check the exit status of the background process
+    if wait $pid; then
+        # Task succeeded, mark with a green check
+        printf "%-50s [${LIGHT_GREEN}✓${NC}]\n" "$task"
+    else
+        # Task failed, exit and print error message
+        printf "%-50s [${LIGHT_RED}✗${NC}]\n" "$task"
+        # echo
+        # exit 1  # Exit the script if the task fails
+    fi
+}
+
+#Loaders
+#Download loader
+download_loader() {
+    show_spinner $! "Downloading $file_download_name"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: Download failed. Please check your internet connection and try again.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}$file_download_name "downloaded successfully!"${NC}
+        sleep 1.0
+    fi
+}
+
+#pdbfix loader
+pdbfix_loader() {
+    show_spinner $! "Fixing PDB File"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: Failed to fix PDB file. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"PDB file fixed successfully. Restarting generating protein topology."${NC}
+        sleep 3.0
+    fi
+}
+
+#Box loader
+box_loader() {
+    show_spinner $! "Preparing Box"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: Failed to define the box. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"Box prepared successfully!"${NC}
+        sleep 1.0
+    fi
+}
+
+#Solvate model loader
+solvate_loader() {
+    show_spinner $! "Solvating the system"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: Failed to solvate the system. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"System solvated successfully!"${NC}
+        sleep 1.0
+    fi
+}
+
+#ion tpr loader
+ion_tpr_loader() {
+    show_spinner $! "Adding ions to the system"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: Failed to generate ions.tpr. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"Ions.tpr generated successfully"${NC}
+        sleep 1.0
+    fi
+}
+
+#Ion addition loader
+ion_add_loader() {
+    show_spinner $! "Adding ions to the system"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: Failed to add ions. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"Ions added successfully"${NC}
+        sleep 1.0
+    fi
+}
+
+# #Energy minimization preparation
+# preparing_energy_min_loader(){
+#     show_spinner $! "Preparing"
+#     wait $!
+#     if [ $? -ne 0 ]; then
+#         echo -e "${LIGHT_RED}Error: Preparation step failed. See log file for more info.${NC}"
+#         exit 1
+#     else
+#     echo -e ${LIGHT_GREEN}"Preparation successful!"${NC}
+#     sleep 1.0
+#     fi
+# }
+
+#Energy minimization loader
+energy_minimization_loader() {
+    show_spinner $! "Running energy minimization"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: Failed minimize energy. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"Energy minimized successfully"${NC}
+        sleep 1.0
+    fi
+}
+
+#Equilibration preparation loader
+equilibration_preparation_loader() {
+    show_spinner $! "Preparing for $equilibration_step_name"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: $equilibration_step_name preparation failed. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"$equilibration_step_name preparation successful"${NC}
+        sleep 1.0
+    fi
+}
+
+#Equilibration loader
+equilibration_loader() {
+    show_spinner $! "Running $equilibration_step_name"
+    wait $!
+    if [ $? -ne 0 ]; then
+        echo -e "${LIGHT_RED}Error: $equilibration_step_name failed. See log file for more info.${NC}"
+        exit 1
+    else
+        echo -e ${LIGHT_GREEN}"$equilibration_step_name done successfully"${NC}
+        sleep 1.0
+    fi
+}
+
+#check internet connection
+check_internet() {
+    if ping -c 1 -W 1 8.8.8.8 &>/dev/null; then
+        echo -e "Status [${LIGHT_GREEN}Online${NC}]"
+    else
+        echo -e "Status [${LIGHT_RED}Offline${NC}]"
+        echo -e "${LIGHT_RED}It is recommended to connect to the internet while process is going on."
+        echo -e "If any dependencies are missing then you may not able to download.${NC}"
+    fi
+}
+
+# Check if pdbid variable is set and not empty
+check_pdbid() {
+    if [[ -z "$pdb_id" ]]; then
+        echo -e "${LIGHT_RED}No PDB ID provided.${NC}"
+        return 1 # PDB ID is not set
+    else
+        echo -e "PDB ID: ${LIGHT_GREEN}$pdb_id${NC}"
+        return 0 # PDB ID is set
+    fi
+}
+
 banner() {
     # Main script loop
     clear
