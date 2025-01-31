@@ -47,7 +47,7 @@ loader() {
     local spin='|/-\\'
     local i=0
     while kill -0 $pid 2>/dev/null; do
-        i=$(( (i+1) %4 ))
+        i=$(((i + 1) % 4))
         echo -ne "\r${CYAN}Running Simulation... ${spin:$i:1} ${RESET}"
         sleep $delay
     done
@@ -250,11 +250,57 @@ check_pdbid() {
     fi
 }
 
-#Main Function Starts Here 
+#Main Function Starts Here
 download_protein() {
     (wget -q "https://files.rcsb.org/download/${pdb_id}.pdb" -O protein.pdb) &
     $pid=$!
     wait $pid
+}
+
+update_eq_steps() {
+    local equilibration_time=$1 # Get equilibration time (ps)
+    local time_step=$2          # Get time step (fs)
+
+    # Files to update
+    nvt_mdp="nvt.mdp"
+    npt_mdp="npt.mdp"
+
+    # Calculate steps
+    local steps=$(((equilibration_time * 1000) / time_step))
+
+    # Update NVT MDP file
+    if [[ -f "$nvt_mdp" ]]; then
+        sed -i "s/^nsteps.*/nsteps = $steps/" "$nvt_mdp"
+        echo "Updated $nvt_mdp: nsteps = $steps"
+    else
+        echo "Error: $nvt_mdp not found!"
+    fi
+
+    # Update NPT MDP file
+    if [[ -f "$npt_mdp" ]]; then
+        sed -i "s/^nsteps.*/nsteps = $steps/" "$npt_mdp"
+        echo "Updated $npt_mdp: nsteps = $steps"
+    else
+        echo "Error: $npt_mdp not found!"
+    fi
+}
+
+update_md_steps() {
+    local sim_time=$1  # Get production MD time (ns)
+    local time_step=$2 # Get time step (fs)
+
+    # MD parameter file
+    md_mdp="md.mdp"
+
+    # Calculate steps
+    local sim_steps=$(((sim_time * 1000000) / time_step)) # Convert ns to fs and divide by time step
+
+    # Update MD MDP file
+    if [[ -f "$md_mdp" ]]; then
+        sed -i "s/^nsteps.*/nsteps = $sim_steps/" "$md_mdp"
+    else
+        echo "Error: $md_mdp not found!"
+    fi
 }
 
 # Function to fix PDB file using PDBFixer
@@ -419,39 +465,8 @@ NPT_equilibration() {
     echo
 }
 
-update_eq_steps() {
-    local equilibration_time=$1  # Get equilibration time (ps)
-    local time_step=$2  # Get time step (fs)
-
-    # Files to update
-    nvt_mdp="nvt.mdp"
-    npt_mdp="npt.mdp"
-
-    # Calculate steps
-    local steps=$(( (equilibration_time * 1000) / time_step ))
-
-    # Update NVT MDP file
-    if [[ -f "$nvt_mdp" ]]; then
-        sed -i "s/^nsteps.*/nsteps = $steps/" "$nvt_mdp"
-        echo "Updated $nvt_mdp: nsteps = $steps"
-    else
-        echo "Error: $nvt_mdp not found!"
-    fi
-
-    # Update NPT MDP file
-    if [[ -f "$npt_mdp" ]]; then
-        sed -i "s/^nsteps.*/nsteps = $steps/" "$npt_mdp"
-        echo "Updated $npt_mdp: nsteps = $steps"
-    else
-        echo "Error: $npt_mdp not found!"
-    fi
-}
-
 # Function to run equilibrium
 equilibrium() {
-    # Call function with user inputs
-    time_step="2"
-    update_eq_steps "$equilibration_time" "$time_step"
     NVT_equilibration
     if [[ $? -ne 0 ]]; then
         echo -e "${LIGHT_RED}Error: NVT equilibration failed.${NC}"
@@ -466,29 +481,8 @@ equilibrium() {
     fi
 }
 
-update_md_steps() {
-    local sim_time=$1  # Get production MD time (ns)
-    local time_step=$2  # Get time step (fs)
-
-    # MD parameter file
-    md_mdp="md.mdp"
-
-    # Calculate steps
-    local sim_steps=$(( (sim_time * 1000000) / time_step ))  # Convert ns to fs and divide by time step
-
-    # Update MD MDP file
-    if [[ -f "$md_mdp" ]]; then
-        sed -i "s/^nsteps.*/nsteps = $sim_steps/" "$md_mdp"
-    else
-        echo "Error: $md_mdp not found!"
-    fi
-}
-
 # Function to run production MD
 production_md() {
-    # Call function with user inputs
-    time_step="2"
-    update_md_steps "$sim_time" "$time_step"
 
     if [[ -n "$gpu_info" ]]; then
 
@@ -514,7 +508,7 @@ production_md() {
     $pid=$!
     wait $pid
     run_mode="CPU"
-    
+
     #Recentering and Rewrapping Coordinates...
     if [ ! -f "md.xtc" ]; then
         exit 1
@@ -529,6 +523,11 @@ production_md() {
 }
 
 automatic_run() {
+    # Update eq and md steps
+    time_step="2"
+    update_eq_steps "$equilibration_time" "$time_step"
+    update_md_steps "$sim_time" "$time_step"
+
     # Step 1: Download protein
     download_protein >/dev/null 2>&1 &
     auto_task_spinner $! "Step 1 of 7: Downloading protein structure"
@@ -579,14 +578,14 @@ banner() {
     echo -e "${LIGHT_RED} \\______  /|____|_  /\\____|__  /\\___/   |___| |____|  ${RESET}/ ____| "
     echo -e "${LIGHT_RED}        \\/        \\/         \\/                       ${RESET}\\/      "
     echo
-    echo -e "${WHITE}  [${LIGHT_RED}G${NC}ROMACS ${LIGHT_RED}R${NC}apid ${LIGHT_RED}A${NC}nalysis & ${LIGHT_RED}V${NC}isualization ${LIGHT_RED}I${NC}nterface ${LIGHT_RED}T${NC}ool -y]${NC}"
+    echo -e "${WHITE}  [${LIGHT_RED}G${NC}ROMACS ${LIGHT_RED}R${NC}un ${LIGHT_RED}A${NC}nalysis & ${LIGHT_RED}V${NC}isualization ${LIGHT_RED}I${NC}nterface ${LIGHT_RED}T${NC}ool -y]${NC}"
     echo
 }
 
 # Start a background process to simulate the simulation task
 (
     # Simulate the long-running simulation process
-    sleep 15  # Simulate a 15-second process (your simulation)
+    sleep 15 # Simulate a 15-second process (your simulation)
 ) &
 
 # Get the background process ID
