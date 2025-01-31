@@ -273,7 +273,6 @@ update_eq_steps() {
     # Update NVT MDP file
     if [[ -f "$nvt_mdp" ]]; then
         sed -i "s/^nsteps.*/nsteps = $steps/" "$nvt_mdp"
-        echo "Updated $nvt_mdp: nsteps = $steps"
     else
         echo "Error: $nvt_mdp not found!"
     fi
@@ -281,7 +280,6 @@ update_eq_steps() {
     # Update NPT MDP file
     if [[ -f "$npt_mdp" ]]; then
         sed -i "s/^nsteps.*/nsteps = $steps/" "$npt_mdp"
-        echo "Updated $npt_mdp: nsteps = $steps"
     else
         echo "Error: $npt_mdp not found!"
     fi
@@ -294,8 +292,8 @@ update_md_steps() {
     # MD parameter file
     md_mdp="md.mdp"
 
-    # Calculate steps
-    local sim_steps=$(((sim_time * 1000000) / time_step)) # Convert ns to fs and divide by time step
+    # Calculate steps using bc for floating-point division
+    local sim_steps=$(echo "scale=0; ($sim_time * 1000000) / $time_step" | bc)
 
     # Update MD MDP file
     if [[ -f "$md_mdp" ]]; then
@@ -524,7 +522,7 @@ production_md() {
     printf "4 4\n" | gmx rms -s md.tpr -f md_noPBC.xtc -o rmsd.xvg -tu ns || exit 1
 
     #Extract frames
-    simulation_time=$((sim_time * 1000))
+    simulation_time=$(echo "$sim_time * 1000" | bc)
 
     # Define the interval (100 ps)
     interval=100
