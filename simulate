@@ -10,8 +10,6 @@ CYAN='\033[36m'
 
 source /etc/GRAVITy/colors
 source parameters.sh
-mkdir frames
-frames_dir=frames
 
 #check internet connection
 check_internet() {
@@ -524,12 +522,31 @@ result_analyze(){
     printf "4 4\n" | gmx rms -s md.tpr -f md_noPBC.xtc -o rmsd.xvg -tu ns || exit 1
 
     #Extract frames
-    simulation_time=$(echo "scale=0; $sim_time * 1000" | bc | awk '{printf "%.0f", $1}')
+    # Ensure sim_time is set
+    if [ -z "$sim_time" ]; then
+        echo "Error: sim_time is not set."
+        exit 1
+    fi
 
-    if [ "$simulation_time" -gt 100 ]; then
-        # Define the interval (100 ps)
-        interval=100
+    # Convert sim_time from ns to ps and ensure it's an integer
+    simulation_time=$(echo "$sim_time * 1000" | bc | awk '{printf "%.0f", $1}')
 
+    if [ "$simulation_time" -ge 100 ]; then
+        # Determine interval based on sim_time
+        if [ "$simulation_time" -ge 100000 ]; then
+            interval=50000  # 50 ns
+        elif [ "$simulation_time" -ge 10000 ]; then
+            interval=5000   # 5 ns
+        elif [ "$simulation_time" -ge 1000 ]; then
+            interval=500    # 500 ps
+        else
+            interval=100    # 100 ps
+        fi
+
+        # Ensure frames directory exists
+        frames_dir="frames"
+        mkdir -p "$frames_dir"
+        
         # Initialize the start time
         start_time=0
 
