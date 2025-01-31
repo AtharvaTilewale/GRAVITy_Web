@@ -10,6 +10,8 @@ CYAN='\033[36m'
 
 source /etc/GRAVITy/colors
 source parameters.sh
+mkdir frames
+frames_dir=frames
 
 #check internet connection
 check_internet() {
@@ -520,6 +522,28 @@ production_md() {
         exit 1
     fi
     printf "4 4\n" | gmx rms -s md.tpr -f md_noPBC.xtc -o rmsd.xvg -tu ns || exit 1
+
+    #Extract frames
+    simulation_time=$((sim_time * 1000))
+
+    # Define the interval (100 ps)
+    interval=100
+
+    # Initialize the start time
+    start_time=0
+
+    # Loop through the time steps and extract frames
+    while [ $start_time -le $simulation_time ]; do
+        # Here you can call the command to extract the frame, e.g.:
+        printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${start_time}.pdb -b $start_time -e $start_time
+        ((start_time+=interval))
+    done
+
+    # If the last frame isn't exactly a multiple of the interval, add it
+    if [ $(($simulation_time % $interval)) -ne 0 ]; then
+        # Similarly, you can call the command to extract the last frame
+        printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${simulation_time}.pdb -b $simulation_time -e $simulation_time
+    fi
 }
 
 automatic_run() {
