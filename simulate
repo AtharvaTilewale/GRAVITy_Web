@@ -333,7 +333,7 @@ generate_protein_topology() {
     # Run GROMACS pdb2gmx in the background and track it with a spinner
     gmx pdb2gmx -f "protein.pdb" -o "protein.gro" -ff "$forcefield" -water "$watermodel" -ignh >/dev/null 2>&1 &
     pid_gmx=$! # Store PID of the background task
-    auto_task_spinner $pid_gmx "Step 2 of 7: Generating Protein Topology"
+    auto_task_spinner $pid_gmx "Step 2 of 8: Generating Protein Topology"
 
     # Check the exit status of pdb2gmx
     wait $pid_gmx
@@ -508,7 +508,9 @@ production_md() {
     $pid=$!
     wait $pid
     run_mode="CPU"
+}
 
+result_analyze(){
     #Recentering and Rewrapping Coordinates...
     if [ ! -f "md.xtc" ]; then
         exit 1
@@ -524,23 +526,27 @@ production_md() {
     #Extract frames
     simulation_time=$(echo "$sim_time * 1000" | bc)
 
-    # Define the interval (100 ps)
-    interval=100
+    if [ "$simulation_time" -gt 100 ]; then
+        # Define the interval (100 ps)
+        interval=100
 
-    # Initialize the start time
-    start_time=0
+        # Initialize the start time
+        start_time=0
 
-    # Loop through the time steps and extract frames
-    while [ $start_time -le $simulation_time ]; do
-        # Here you can call the command to extract the frame, e.g.:
-        printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${start_time}.pdb -b $start_time -e $start_time
-        ((start_time+=interval))
-    done
+        # Loop through the time steps and extract frames
+        while [ $start_time -le $simulation_time ]; do
+            # Here you can call the command to extract the frame, e.g.:
+            printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${start_time}.pdb -b $start_time -e $start_time
+            ((start_time+=interval))
+        done
 
-    # If the last frame isn't exactly a multiple of the interval, add it
-    if [ $(($simulation_time % $interval)) -ne 0 ]; then
-        # Similarly, you can call the command to extract the last frame
-        printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${simulation_time}.pdb -b $simulation_time -e $simulation_time
+        # If the last frame isn't exactly a multiple of the interval, add it
+        if [ $(($simulation_time % $interval)) -ne 0 ]; then
+            # Similarly, you can call the command to extract the last frame
+            printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${simulation_time}.pdb -b $simulation_time -e $simulation_time
+        fi
+    else
+        sleep 1.0
     fi
 }
 
@@ -552,35 +558,40 @@ automatic_run() {
 
     # Step 1: Download protein
     download_protein >/dev/null 2>&1 &
-    auto_task_spinner $! "Step 1 of 7: Downloading protein structure"
+    auto_task_spinner $! "Step 1 of 8: Downloading protein structure"
 
     # Step 2: Generate protein topology
     generate_protein_topology
 
     # Step 3: Define box and solvate the system
     define_box_and_solvate >/dev/null 2>&1 &
-    auto_task_spinner $! "Step 3 0f 7: Define Box and Solvate the System"
+    auto_task_spinner $! "Step 3 0f 8: Define Box and Solvate the System"
 
     # Step 4: Add ions to system
     add_ions >/dev/null 2>&1 &
-    auto_task_spinner $! "Step 4 0f 7: Add ions to system"
+    auto_task_spinner $! "Step 4 0f 8: Add ions to system"
 
     # Step 5: Energy minimization
     energy_minimization >/dev/null 2>&1 &
-    auto_task_spinner $! "Step 5 0f 7: Minimize energy"
+    auto_task_spinner $! "Step 5 0f 8: Minimize energy"
 
     # Step 6: Equilibrate system
     equilibrium >/dev/null 2>&1 &
-    auto_task_spinner $! "Step 6 0f 7: Equilibrate system"
+    auto_task_spinner $! "Step 6 0f 8: Equilibrate system"
 
     # Step 7: Run MD Simulation
     start_time=$(date +%s)
     production_md >/dev/null 2>&1 &
-    auto_task_spinner $! "Step 7 0f 7: Run MD Simulation"
+    auto_task_spinner $! "Step 7 0f 8: Run MD Simulation"
 
     # Calculate total time taken for the simulation
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
+
+    # Step 8: Analyze results
+    result_analyze >/dev/null 2>&1 &
+    auto_task_spinner $! "Step 8 of 8: Analyzing Results"
+
     echo
     echo -e "${LIGHT_CYAN}Simulation completed on $run_mode.${NC}"
     echo "Elapsed time: $elapsed seconds"
