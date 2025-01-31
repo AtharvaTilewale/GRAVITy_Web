@@ -632,13 +632,16 @@ automatic_run() {
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
 
+    # Convert and display elapsed time in HH:MM:SS format
+    formatted_time=$(date -u -d @"$elapsed" +%H:%M:%S)
+
     # Step 8: Analyze results
     result_analyze >/dev/null 2>&1 &
     auto_task_spinner $! "Step 8 of 8: Analyzing Results"
 
     echo
     echo -e "${LIGHT_CYAN}Simulation completed on $run_mode.${NC}"
-    echo "Elapsed time: $elapsed seconds"
+    echo "Elapsed time: $formatted_time"
     echo
     sleep 1.0
 }
