@@ -531,22 +531,51 @@ result_analyze(){
     # Convert sim_time from ns to ps and ensure it's an integer
     simulation_time=$(echo "$sim_time * 1000" | bc | awk '{printf "%.0f", $1}')
 
-    if [ "$simulation_time" -ge 100 ]; then
-        # Determine interval based on sim_time
-        if [ "$simulation_time" -ge 100000 ]; then
-            interval=50000  # 50 ns
-        elif [ "$simulation_time" -ge 10000 ]; then
-            interval=5000   # 5 ns
-        elif [ "$simulation_time" -ge 1000 ]; then
-            interval=500    # 500 ps
-        else
-            interval=100    # 100 ps
-        fi
+    if [ -z "$sim_frames" ]; then
+        if [ "$simulation_time" -ge 100 ]; then
+            # Determine interval based on sim_time
+            if [ "$simulation_time" -gt 100000 ]; then
+                interval=50000  # 50 ns
+            elif [ "$simulation_time" -gt 10000 ]; then
+                interval=5000   # 5 ns
+            elif [ "$simulation_time" -gt 1000 ]; then
+                interval=500    # 500 ps
+            else
+                interval=100    # 100 ps
+            fi
 
+            # Ensure frames directory exists
+            frames_dir="frames"
+            mkdir -p "$frames_dir"
+
+            # Initialize the start time
+            start_time=0
+
+            # Loop through the time steps and extract frames
+            while [ $start_time -le $simulation_time ]; do
+                # Here you can call the command to extract the frame, e.g.:
+                printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${start_time}.pdb -b $start_time -e $start_time
+                ((start_time+=interval))
+            done
+
+            # If the last frame isn't exactly a multiple of the interval, add it
+            if [ $(($simulation_time % $interval)) -ne 0 ]; then
+                # Similarly, you can call the command to extract the last frame
+                printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${simulation_time}.pdb -b $simulation_time -e $simulation_time
+            fi
+        else
+            sleep 1.0
+        fi
+    else
+        # Custom frame extraction based on user-defined frame count
+        interval=$(echo "$simulation_time / $sim_frames" | bc)
+        if [ "$interval" -lt 1 ]; then
+            interval=1
+        fi
         # Ensure frames directory exists
         frames_dir="frames"
         mkdir -p "$frames_dir"
-        
+
         # Initialize the start time
         start_time=0
 
@@ -562,8 +591,6 @@ result_analyze(){
             # Similarly, you can call the command to extract the last frame
             printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${simulation_time}.pdb -b $simulation_time -e $simulation_time
         fi
-    else
-        sleep 1.0
     fi
 }
 
