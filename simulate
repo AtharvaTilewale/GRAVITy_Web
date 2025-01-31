@@ -524,7 +524,7 @@ result_analyze(){
     printf "4 4\n" | gmx rms -s md.tpr -f md_noPBC.xtc -o rmsd.xvg -tu ns || exit 1
 
     #Extract frames
-    simulation_time=$(echo "$sim_time * 1000" | bc)
+    simulation_time=$(echo "scale=0; $sim_time * 1000" | bc | awk '{printf "%.0f", $1}')
 
     if [ "$simulation_time" -gt 100 ]; then
         # Define the interval (100 ps)
