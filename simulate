@@ -567,29 +567,31 @@ result_analyze(){
             sleep 1.0
         fi
     else
-        # Custom frame extraction based on user-defined frame count
-        interval=$(echo "$simulation_time / $sim_frames" | bc)
-        if [ "$interval" -lt 1 ]; then
-            interval=1
+        # Round interval to the nearest multiple of 10
+        interval=$(awk "BEGIN {print int((($simulation_time / $sim_frames) + 5) / 10) * 10}")
+
+        # Ensure the minimum interval is 10 ps
+        if [ "$interval" -lt 10 ]; then
+            interval=10
         fi
-        # Ensure frames directory exists
+
+        # Create frames directory
         frames_dir="frames"
         mkdir -p "$frames_dir"
 
-        # Initialize the start time
+        # Initialize start time
         start_time=0
 
-        # Loop through the time steps and extract frames
-        while [ $start_time -le $simulation_time ]; do
-            # Here you can call the command to extract the frame, e.g.:
-            printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${start_time}.pdb -b $start_time -e $start_time
-            ((start_time+=interval))
+        # Extract frames at multiples of 10 ps
+        while [ "$start_time" -le "$simulation_time" ]; do
+            printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o "$frames_dir/frame_${start_time}.pdb" -b "$start_time" -e "$start_time"
+            start_time=$((start_time + interval))
         done
 
-        # If the last frame isn't exactly a multiple of the interval, add it
-        if [ $(($simulation_time % $interval)) -ne 0 ]; then
-            # Similarly, you can call the command to extract the last frame
-            printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o $frames_dir/frame_${simulation_time}.pdb -b $simulation_time -e $simulation_time
+        # Ensure the last frame is included if not a multiple of interval
+        last_frame=$(( (simulation_time / 10) * 10 ))  # Round down to nearest 10
+        if [ "$last_frame" -ne "$start_time" ]; then
+            printf "1\n" | gmx trjconv -s md.tpr -f md.xtc -o "$frames_dir/frame_${last_frame}.pdb" -b "$last_frame" -e "$last_frame"
         fi
     fi
 }
