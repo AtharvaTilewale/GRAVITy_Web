@@ -17,6 +17,10 @@ def index():
 def simulate():
     return render_template('simulate.html')
 
+@app.route('/status')
+def simulate():
+    return render_template('status.html')
+
 @app.route('/submit', methods=['POST'])
 def submit():
     # Get values from form input
