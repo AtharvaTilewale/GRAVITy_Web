@@ -18,7 +18,7 @@ def simulate():
     return render_template('simulate.html')
 
 @app.route('/status')
-def simulate():
+def status():
     return render_template('status.html')
 
 @app.route('/submit', methods=['POST'])
@@ -44,7 +44,7 @@ def submit():
         file.write(f"equilibration_time={equilibration_time}\n")
         file.write(f"sim_time={sim_time}\n")
         file.write(f"sim_frames={sim_frames}\n")
-
+           
     # Run a bash script (for example, 'myscript.sh')
     try:
         subprocess.run(['bash', 'simulate'], check=True)
