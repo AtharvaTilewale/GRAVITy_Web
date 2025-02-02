@@ -664,15 +664,6 @@ banner() {
     echo
 }
 
-# Start a background process to simulate the simulation task
-(
-    # Simulate the long-running simulation process
-    sleep 15 # Simulate a 15-second process (your simulation)
-) &
-
-# Get the background process ID
-sim_pid=$!
-
 # Show the rotating loader
 clear
 banner
