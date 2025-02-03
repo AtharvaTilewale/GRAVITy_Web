@@ -51,7 +51,7 @@ loader() {
         echo -ne "\r${CYAN}Running Simulation... ${spin:$i:1} ${RESET}"
         sleep $delay
     done
-    echo -ne "\r${GREEN}Done! Simulation complete.${RESET}           \n"
+    echo -ne "\r${GREEN}Done! Simulation complete.${RESET}\n"
 }
 
 # Function to stop the spinner if an error occurs
