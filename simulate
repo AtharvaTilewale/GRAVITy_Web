@@ -74,7 +74,7 @@ show_spinner() {
         printf "\r${spin:$i:1} %s..." "$message"
         sleep 0.1
     done
-    printf "\r%s...        \n" "$message"
+    printf "\r%s... \n" "$message"
 }
 
 auto_task_spinner() {
