@@ -6,7 +6,6 @@ from threading import Thread
 import time
 import socket
 
-
 app = Flask(__name__)
 
 @app.route('/')
