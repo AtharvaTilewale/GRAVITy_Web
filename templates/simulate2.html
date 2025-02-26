@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <title>Parameter Setup | GRAVITy</title>
+    <style>
+        body {
+            font-family: "Raleway", sans-serif;
+            margin-left: 0;
+            padding: 0;
+            display: block;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            margin: auto;
+            margin-top: 25px;
+        }
+
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-row label {
+            flex: 1;
+        }
+
+        .form-row .input-container {
+            flex: 2;
+            position: relative;
+            display: flex;
+        }
+
+        .form-row select,
+        .form-row input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 20px;
+            cursor: pointer;
+            color: #007bff;
+            top: 5px;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .submit-button {
+            display: block;
+            width: 30%;
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            text-align: center;
+            margin: auto;
+            margin-top: 20px;
+            margin-bottom: 50px;
+        }
+
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+
+        .submit-button:disabled {
+            background-color: transparent;
+            border: 1px solid rgb(236, 236, 236);
+            cursor: not-allowed;
+            color: #aeaeae;
+        }
+
+        .back-btn {
+            display: block;
+            width: 30%;
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: transparent;
+            border: 1px solid white;
+            border-radius: 7px;
+            cursor: pointer;
+            text-align: center;
+            margin: auto;
+            margin-top: 20px;
+            margin-bottom: 50px;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        :disabled {
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="parameterForm" action="/submit" method="POST">
+        <div class="form-container">
+            <h2>Pre-Processing Parameters</h2><br>
+            <div class="form-row">
+                <label for="pdb_id">PDB ID</label>
+                <div class="input-container">
+                    <input type="text" id="pdb_id" name="pdb_id" placeholder="1SMD" required>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Input PDB ID for Protein</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="forcefield">Forcefield</label>
+                <div class="input-container">
+                    <select id="forcefield" name="forcefield">
+                        <option value="charmm36">CHARMM36</option>
+                        <option value="charmm27">CHARMM27</option>
+                        <option value="opls-aa">OPLS/AA</option>
+                        <option value="amberss9b">AMBERSS9B</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Select forcefield, default CHARMM36</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="water_model">Water Model</label>
+                <div class="input-container">
+                    <select id="water_model" name="water_model">
+                        <option value="tip3p">TIP3P</option>
+                        <option value="tip4p">TIP4P</option>
+                        <option value="tip5p">TIP5P</option>
+                        <option value="spc216">SPC216</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Select water model, default TIP3P</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="box_type">Box Type</label>
+                <div class="input-container">
+                    <select id="box_type" name="box_type">
+                        <option value="cubic">Cubic</option>
+                        <option value="dodecahedron">Dodecahedron</option>
+                        <option value="triclinic">Triclinic</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Select box type, default Cubic</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="neutralize">Neutralize by</label>
+                <div class="input-container">
+                    <select id="neutralize" name="neutralize" disabled>
+                        <option value="nacl">NaCl</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Select neutralizing salt, default NaCl</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="concentration">Concentration</label>
+                <div class="input-container">
+                    <input type="text" id="concentration" name="concentration" placeholder="0.15" disabled>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Molar amount of salt concentration after neutralization, default 0.15 molar or 150 mM</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="form-container">
+            <h2>Equilibration Parameter</h2><br>
+            <div class="form-row">
+                <label for="equilibration">Equilibration type</label>
+                <div class="input-container">
+                    <input type="text" id="equilibration" placeholder="NVT/NPT" disabled>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Equilibration type, default NVT/NPT</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="temperature">Temperature (K)</label>
+                <div class="input-container">
+                    <input type="text" id="temperature" name="temperature" placeholder="300" disabled>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Simulation temperature, default 300K</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="pressure">Pressure (bar)</label>
+                <div class="input-container">
+                    <input type="text" id="pressure" name="pressure" placeholder="1" disabled>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Simulation pressure, default 1 bar</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="equilibration_time">Equilibration Time (ps)</label>
+                <div class="input-container">
+                    <input type="text" id="equilibration_time" name="equilibration_time" placeholder="100">
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Equilibration time, default 100ps</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="form-container">
+            <h2>Simulation Parameters</h2><br>
+            <div class="form-row">
+                <label for="sim_time">Simulation Time (ns)</label>
+                <div class="input-container">
+                    <input type="text" id="sim_time" name="sim_time" placeholder="100" required>
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Select simulation time (ns)</span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="sim_frames">Number of frames (Optional)</label>
+                <div class="input-container">
+                    <input type="text" id="sim_frames" name="sim_frames" placeholder="20">
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Select number of frames to be saved</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="form-container" style="padding: 0; background-color: transparent; display: flex; border: none;">
+            <a class="back-btn" href="../">Home</a>
+            <button type="submit" id="submitButton" class="submit-button" disabled>Submit</button>
+        </div>
+    </form>
+    <script>
+        // Function to check if all required fields are filled
+        function checkFormValidity() {
+            const requiredFields = document.querySelectorAll('input[required], select[required]');
+            const submitButton = document.getElementById('submitButton');
+            const isFormValid = Array.from(requiredFields).every(field => field.value.trim() !== "");
+            submitButton.disabled = !isFormValid;
+        }
+
+        // Event listeners for input changes to validate form
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('input', checkFormValidity);
+        });
+
+        // Initial validation on page load
+        checkFormValidity();
+    </script>
+</body>
+
+</html>
