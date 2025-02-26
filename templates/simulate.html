@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/simulate.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <script src="https://3Dmol.org/build/3Dmol-min.js"></script>     
+    <script src="https://3Dmol.org/build/3Dmol.ui-min.js"></script>     
+    <title>Parameter Setup | GRAVITy</title>
+</head>
+<body>
+    <div class="header">
+        <ul class="nav">
+            <li>File</li>
+            <li>Edit</li>
+            <li>Tutorials</li>
+            <li>Help</li>
+        </ul>
+    </div>
+    </div>
+    <div class="container">
+        <div class="column left" contenteditable="false">
+            <div class="resizer"></div>
+        </div>
+        <div class="column right" contenteditable="false">
+            <div id="viewer">
+                <div style="height: 100%; width: 100%; position: relative;" class='viewer_3Dmoljs' data-pdb='7bw1' data-backgroundcolor='000' data-style='cartoon:color=spectrum' data-surface='opacity:.5;color:white' data-ui='true'></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const leftColumn = document.querySelector('.left');
+        const resizer = document.querySelector('.resizer');
+
+        resizer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+        });
+
+        function resize(e) {
+            let newWidth = e.clientX / window.innerWidth * 100;
+            if (newWidth >= 20 && newWidth <= 50) {
+                leftColumn.style.width = newWidth + '%';
+            }
+        }
+
+        function stopResize() {
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+
+        // // Initialize 3Dmol.js Viewer
+        // let viewer = $3Dmol.createViewer("viewer", { backgroundColor: "white" });
+        // viewer.addModel("3j8y", "pdb"); // Example PDB file
+        // viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+        // viewer.zoomTo();
+        // viewer.render();
+    </script>
+</body>
+</html>
