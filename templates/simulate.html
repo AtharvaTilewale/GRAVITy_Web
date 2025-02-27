@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/simulate.css">
+    <link rel="stylesheet" href="../static/css/main.css">
     <link rel="stylesheet" href="../static/css/navbar.css">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
@@ -14,27 +15,63 @@
 </head>
 
 <body>
+
+    <!-- ========================= HEADER SECTION STARTS HERE ========================== -->
+
     <div class="header">
+        <!-- Navigation bar starts here -->
         <ul class="nav">
+
+            <!-- ************************ File Tab ************************ -->
+
             <li onclick="toggleDropdown(event)">File
+                <!-- File Dropdown Menu -->
                 <ul class="dropdown" id="fileDropdown">
+
+                    <!-- Import PDB file from local device -->
                     <li onclick="document.getElementById('fileInput').click()">Import File
-                        <input type="file" id="fileInput" accept=".pdb" style="display: none;"
-                            onchange="loadPDBFile(event)">
+                        <input type="file" id="fileInput" accept=".pdb" style="display: none;" onchange="loadPDBFile(event)">
                     </li>
+
+                    <!-- Fetch PDB structure from PDB DataBase -->
                     <li onclick="openModal()">Get with PDB ID
                     </li>
+
                 </ul>
             </li>
+
+            <!-- ************************ Edit Tab ************************ -->
+
             <li>Edit</li>
+
+            <!-- ****************** Tutorials Tab ************************ -->
+
             <li>Tutorials</li>
+
+            <!-- ****************** Help Tab ************************ -->
+
             <li>Help</li>
         </ul>
+        <!-- Navigation bar ends here -->
     </div>
+
+    <!-- ========================= HEADER SECTION ENDS HERE ========================== -->
+
+
+    <!-- =========================== MAIN BODY STARTS HERE =========================== -->
+
     <div class="container">
+
+        <!-- ============ LEFT COLUMN SECTION STARTS HERE ============== -->
+
         <div class="column left" contenteditable="false">
             <div class="resizer"></div>
         </div>
+
+        <!-- ============ LEFT COLUMN SECTION ENDS HERE =============== -->
+
+        <!-- =========== RIGHT COLUMN SECTION STARTS HERE ============= -->
+
         <div class="column right" contenteditable="false">
             <div class="logo-label">
                 <span class="w3-jumbo nosifer-regular">G R A V </span>
@@ -42,10 +79,18 @@
                 <span class="w3-jumbo nosifer-regular">T y</span>
             </div>
             <div id="viewer">
-                <!-- <div style="height: 100%; width: 100%; position: relative;" class='viewer_3Dmoljs' data-pdb='pdbID' data-backgroundcolor='000' data-style='cartoon:color=spectrum' data-surface='opacity:.5;color:white' ></div> -->
             </div>
         </div>
+
+        <!-- ============= RIGHT COLUMN SECTION ENDS HERE ============= -->
+
     </div>
+
+    <!-- =========================== MAIN BODY ENDS HERE =========================== -->
+
+
+    <!-- =========================== OTHER FUNCTION STARTS HERE =========================== -->
+
     <div id="pdbModal" class="modal">
         <div class="modal-header">Fetch Protein Structure <span class="close-btn" onclick="closeModal()">&times;</span>
         </div>
@@ -60,6 +105,12 @@
         </div>
         <button class="fetchBtn" onclick="fetchPDB()">Fetch</button>
     </div>
+
+    <!-- =========================== OTHER FUNCTION ENDS HERE =========================== -->
+
+
+    <!-- =========================== SCRIPT STARTS HERE =========================== -->
+
     <script>
         const leftColumn = document.querySelector('.left');
         const resizer = document.querySelector('.resizer');
@@ -177,6 +228,9 @@
         // viewer.zoomTo();
         // viewer.render();
     </script>
+
+    <!-- =========================== SCRIPT ENDS HERE =========================== -->
+
 </body>
 
 </html>
