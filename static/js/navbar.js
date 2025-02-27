@@ -22,15 +22,31 @@ function loadPDBFile(event) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            viewer.clear();
+            viewer.clear();  // Clear previous structures
             viewer.addModel(e.target.result, "pdb");
-            viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+
+            // Protein - Cartoon representation
+            viewer.setStyle({ atom: "CA" }, { cartoon: { style: "trace", color: 'spectrum' } });
+
+            // Detect and display ligands (HETATM entries except HOH)
+            viewer.setStyle({ hetflag: true, resn: ["HOH"] }, { }); // Exclude water
+            viewer.setStyle({ hetflag: true }, { stick: { colorscheme: "Jmol" } });
+
+            // Detect and display water molecules
+            viewer.setStyle({ resn: "HOH" }, { sphere: { radius: 0.3, color: "blue" } });
+
+            // Detect and display membrane lipids (Common lipid residues: POPC, POPE, DOPC, etc.)
+            const lipidResidues = ["POPC", "POPE", "DOPC", "DPPC", "DMPC"];
+            viewer.setStyle({ resn: lipidResidues }, { stick: { colorscheme: "greenCarbon" } });
+
+            // Adjust view and render
             viewer.zoomTo();
             viewer.render();
         };
         reader.readAsText(file);
     }
 }
+
 
 //Fetch PDB from web function (Get with PDB ID)
 //Open Modal to enter PDB ID
