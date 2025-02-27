@@ -1,9 +1,6 @@
-const dropdown = document.getElementById("fileDropdown");
+// =========== THIS SCRIPT CONTAINS THE FUNCTIONS FOR THE NAVBAR ==========
 
-function importFile() {
-    alert("Import File function triggered");
-    // Add file import functionality here
-}
+const dropdown = document.getElementById("fileDropdown");
 
 function loadPDBFile(event) {
     const file = event.target.files[0];
