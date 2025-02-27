@@ -1,0 +1,8 @@
+.left_pane {
+    background-color: #555;
+    width: 35%;
+    min-width: 30%;
+    max-width: 50%;
+    resize: horizontal;
+    position: relative;
+}

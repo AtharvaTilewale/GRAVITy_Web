@@ -30,3 +30,24 @@ body {
     position: fixed;
 }
 
+.container {
+    display: flex;
+    height: 100vh;
+    position: relative;
+}
+
+.column {
+    padding: 20px;
+    border: 1px solid #000;
+    overflow: auto;
+}
+
+.resizer {
+    width: 1px;
+    cursor: ew-resize;
+    background: #000;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+}

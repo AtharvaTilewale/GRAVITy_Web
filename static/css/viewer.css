@@ -1,0 +1,10 @@
+#viewer {
+    width: 100%;
+    height: 100%;
+}
+
+.viewer_pane {
+    background-color: #000;
+    flex: 1;
+    position: relative;
+}

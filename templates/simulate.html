@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/main.css">
     <link rel="stylesheet" href="../static/css/navbar.css">
+    <link rel="stylesheet" href="../static/css/fetchPDB.css">
+    <link rel="stylesheet" href="../static/css/left_pane.css">
+    <link rel="stylesheet" href="../static/css/viewer.css">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap">
@@ -15,7 +18,6 @@
 </head>
 
 <body>
-
     <!-- ========================= HEADER SECTION STARTS HERE ========================== -->
 
     <div class="header">
@@ -64,7 +66,7 @@
 
         <!-- ============ LEFT COLUMN SECTION STARTS HERE ============== -->
 
-        <div class="column left" contenteditable="false">
+        <div class="column left_pane" contenteditable="false">
             <div class="resizer"></div>
         </div>
 
@@ -72,18 +74,21 @@
 
         <!-- =========== RIGHT COLUMN SECTION STARTS HERE ============= -->
 
-        <div class="column right" contenteditable="false">
-            <div class="logo-label">
-                <span class="w3-jumbo nosifer-regular">G R A V </span>
-                <img class="alpha_img" src="../static/images/barrel.png"></img>
-                <span class="w3-jumbo nosifer-regular">T y</span>
-            </div>
+        <div class="column viewer_pane" contenteditable="false">
             <div id="viewer">
             </div>
         </div>
 
         <!-- ============= RIGHT COLUMN SECTION ENDS HERE ============= -->
 
+    </div>
+
+    <!-- ****************** BOTTOM LOGO LABEL ************************ -->    
+
+    <div class="logo-label">
+        <span class="w3-jumbo nosifer-regular">G R A V </span>
+        <img class="alpha_img" src="../static/images/barrel.png"></img>
+        <span class="w3-jumbo nosifer-regular">T y</span>
     </div>
 
     <!-- =========================== MAIN BODY ENDS HERE =========================== -->
