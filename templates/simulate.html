@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/css/simulate.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="../static/css/navbar.css">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
-    <script src="https://3Dmol.org/build/3Dmol-min.js"></script>     
-    <script src="https://3Dmol.org/build/3Dmol.ui-min.js"></script>     
-    <title>Parameter Setup | GRAVITy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap">
+    <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+    <script src="https://3Dmol.org/build/3Dmol.ui-min.js"></script>
+    <title>GRAVITy - Simulation Workspace</title>
 </head>
+
 <body>
     <div class="header">
         <ul class="nav">
             <li onclick="toggleDropdown(event)">File
                 <ul class="dropdown" id="fileDropdown">
-                    <li onclick="document.getElementById('fileInput').click()">Import File</li>
+                    <li onclick="document.getElementById('fileInput').click()">Import File
+                        <input type="file" id="fileInput" accept=".pdb" style="display: none;"
+                            onchange="loadPDBFile(event)">
+                    </li>
                     <li onclick="openModal()">Get with PDB ID
                     </li>
                 </ul>
@@ -27,7 +31,6 @@
             <li>Help</li>
         </ul>
     </div>
-    <input type="file" id="fileInput" accept=".pdb" onchange="loadPDBFile(event)">
     <div class="container">
         <div class="column left" contenteditable="false">
             <div class="resizer"></div>
@@ -44,7 +47,8 @@
         </div>
     </div>
     <div id="pdbModal" class="modal">
-        <div class="modal-header">Fetch Protein Structure <span class="close-btn" onclick="closeModal()">&times;</span></div>
+        <div class="modal-header">Fetch Protein Structure <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
         <div class="form-row">
             <label for="pdb_id">Enter PDB ID</label>
             <div class="input-container">
@@ -78,7 +82,7 @@
             document.removeEventListener('mousemove', resize);
             document.removeEventListener('mouseup', stopResize);
         }
-        
+
         function importFile() {
             alert("Import File function triggered");
             // Add file import functionality here
@@ -88,10 +92,10 @@
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     viewer.clear();
                     viewer.addModel(e.target.result, "pdb");
-                    viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+                    viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
                     viewer.zoomTo();
                     viewer.render();
                 };
@@ -130,40 +134,40 @@
             console.log(`Fetching PDB ID: ${pdbId}`);
 
             fetch(`https://files.rcsb.org/download/${pdbId}.pdb`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Failed to fetch PDB file.");
-            }
-            return response.text();
-        })
-        .then(pdbData => {
-            viewer.clear();
-            viewer.addModel(pdbData, "pdb");  // Corrected function
-            viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
-            viewer.zoomTo();
-            viewer.render();
-            console.log("PDB model loaded successfully.");
-            closeModal();
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Failed to load PDB file. Please check the ID.");
-        });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch PDB file.");
+                    }
+                    return response.text();
+                })
+                .then(pdbData => {
+                    viewer.clear();
+                    viewer.addModel(pdbData, "pdb");  // Corrected function
+                    viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+                    viewer.zoomTo();
+                    viewer.render();
+                    console.log("PDB model loaded successfully.");
+                    closeModal();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Failed to load PDB file. Please check the ID.");
+                });
         }
         let modal = document.getElementById("pdbModal");
         let offsetX, offsetY, isDragging = false;
-        modal.addEventListener("mousedown", function(e) {
+        modal.addEventListener("mousedown", function (e) {
             isDragging = true;
             offsetX = e.clientX - modal.offsetLeft;
             offsetY = e.clientY - modal.offsetTop;
         });
-        document.addEventListener("mousemove", function(e) {
+        document.addEventListener("mousemove", function (e) {
             if (isDragging) {
                 modal.style.left = (e.clientX - offsetX) + "px";
                 modal.style.top = (e.clientY - offsetY) + "px";
             }
         });
-        document.addEventListener("mouseup", function() {
+        document.addEventListener("mouseup", function () {
             isDragging = false;
         });
         // // Initialize 3Dmol.js Viewer
@@ -174,4 +178,5 @@
         // viewer.render();
     </script>
 </body>
+
 </html>
