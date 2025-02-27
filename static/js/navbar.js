@@ -1,6 +1,5 @@
 // =========== THIS SCRIPT CONTAINS THE FUNCTIONS FOR THE NAVBAR ==========
 
-
 // Dropdown Script
 
 const dropdown = document.getElementById("fileDropdown");
@@ -35,6 +34,7 @@ function loadPDBFile(event) {
 
 //Fetch PDB from web function (Get with PDB ID)
 //Open Modal to enter PDB ID
+
 function openModal() {
     let modal = document.getElementById("pdbModal");
     modal.style.display = "block";
@@ -44,11 +44,13 @@ function openModal() {
 }
 
 //Close modal funciton
+
 function closeModal() {
     document.getElementById("pdbModal").style.display = "none";
 }
 
 //Fetch PDB using PDB ID and show in visualizer
+
 function fetchPDB() {
     let pdbId = document.getElementById("pdbInput").value.trim();
     if (!pdbId) {
@@ -80,19 +82,23 @@ function fetchPDB() {
 }
 
 //Make modal draggable
+
 let modal = document.getElementById("pdbModal");
 let offsetX, offsetY, isDragging = false;
+
 modal.addEventListener("mousedown", function (e) {
     isDragging = true;
     offsetX = e.clientX - modal.offsetLeft;
     offsetY = e.clientY - modal.offsetTop;
 });
+
 document.addEventListener("mousemove", function (e) {
     if (isDragging) {
         modal.style.left = (e.clientX - offsetX) + "px";
         modal.style.top = (e.clientY - offsetY) + "px";
     }
 });
+
 document.addEventListener("mouseup", function () {
     isDragging = false;
 });
