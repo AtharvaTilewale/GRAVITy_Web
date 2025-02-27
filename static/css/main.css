@@ -3,17 +3,30 @@
     padding: 0;
     box-sizing: border-box;
 }
-.nosifer-regular {font-family: "Nosifer", serif; font-weight: 100; font-style: normal; color:#e9e9e9}
-.alpha_img {width: 10px; height: 23px; top: 8px; position: relative}
+
+body {
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+.nosifer-regular {
+    font-family: "Nosifer", serif;
+    font-weight: 100;
+    font-style: normal;
+    color: #e9e9e9
+}
+
+.alpha_img {
+    width: 10px;
+    height: 23px;
+    top: 8px;
+    position: relative
+}
+
 .logo-label {
     bottom: 5px;
     right: 10px;
     z-index: 1;
     position: fixed;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    overflow: hidden;
 }
 
