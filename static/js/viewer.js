@@ -1,0 +1,1 @@
+let viewer = $3Dmol.createViewer("viewer", { backgroundColor: "black" });
