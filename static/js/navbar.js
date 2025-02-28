@@ -33,7 +33,8 @@ function loadPDBFile(event) {
             viewer.setStyle({ hetflag: true }, { stick: { colorscheme: "Jmol" } });
 
             // Detect and display water molecules
-            viewer.setStyle({ resn: "HOH" }, { sphere: { radius: 0.3, color: "blue" } });
+            viewer.setStyle({ resn: "HOH" }, { sphere: { radius: 0.3, color: "red" } });
+            viewer.setStyle({ resn: "SOL" }, { sphere: { radius: 0.2, color: "blue" } });
 
             // Detect and display membrane lipids (Common lipid residues: POPC, POPE, DOPC, etc.)
             const lipidResidues = ["POPC", "POPE", "DOPC", "DPPC", "DMPC"];
@@ -85,9 +86,25 @@ function fetchPDB() {
         .then(pdbData => {
             viewer.clear();
             viewer.addModel(pdbData, "pdb");  // Corrected function
-            viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+            // Protein - Cartoon representation
+            viewer.setStyle({ atom: "CA" }, { cartoon: { style: "trace", color: 'spectrum' } });
+
+            // Detect and display ligands (HETATM entries except HOH)
+            viewer.setStyle({ hetflag: true, resn: ["HOH"] }, { }); // Exclude water
+            viewer.setStyle({ hetflag: true }, { stick: { colorscheme: "Jmol" } });
+
+            // Detect and display water molecules
+            viewer.setStyle({ resn: "HOH" }, { sphere: { radius: 0.3, color: "red" } });
+            viewer.setStyle({ resn: "SOL" }, { sphere: { radius: 0.2, color: "blue" } });
+
+            // Detect and display membrane lipids (Common lipid residues: POPC, POPE, DOPC, etc.)
+            const lipidResidues = ["POPC", "POPE", "DOPC", "DPPC", "DMPC"];
+            viewer.setStyle({ resn: lipidResidues }, { stick: { colorscheme: "greenCarbon" } });
+
+            // Adjust view and render
             viewer.zoomTo();
             viewer.render();
+            
             console.log("PDB model loaded successfully.");
             closeModal();
         })
