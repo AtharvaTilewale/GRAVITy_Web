@@ -49,8 +49,10 @@ function applyPDBStyles(viewer) {
             viewer.setStyle({ resn: ion }, { sphere: { radius: 0.8, color: ionColors[ion] } });
         });
     }
+    
+    updateHierarchy();
 
     // Adjust view and render
     viewer.zoomTo();
     viewer.render();
-}   
+}
