@@ -53,4 +53,4 @@ function applyPDBStyles(viewer) {
     // Adjust view and render
     viewer.zoomTo();
     viewer.render();
-}
+}   
