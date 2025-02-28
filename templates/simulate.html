@@ -69,34 +69,47 @@
 
         <div class="column left_pane" contenteditable="false">
             <div class="resizer"></div>
+            <div id="askSimType" class="askSimType" style="display: block;">
+                <h3>GRAVITy</h3>
+                <h5>(Gromacs Run Analysis & Visualization Interface Tool)</h5>
+                <br>
+                <a>Do you want to proceed with the manual process, or would you like to go for the automated one?</a>
+                <br>
+                <div>
+                    <button onclick="manual()">Keep Manual</button>
+                    <button onclick="automated()">Go Automated</button>
+                </div>
 
-            <div class="taskpanel">
-                <a>Load Molecules</a>
             </div>
-
-            <div class="taskpanel">
-                <a>Generate Topology</a>
-            </div>
-
-            <div class="taskpanel">
-                <a>Define Box and Solvate the System </a>
-            </div>
-
-            <div class="taskpanel">
-                <a>Add Ions</a>
-            </div>
-
-            <div class="taskpanel">
-                <a>Equilibrate System</a>
-            </div>
-
-            <div class="taskpanel">
-                <a>Run Simulation</a>
+            <div id="simulationTask" style="display: none;">
+                <div class="taskpanel">
+                    <a>Load Molecules</a>
+                </div>
+    
+                <div class="taskpanel">
+                    <a>Generate Topology</a>
+                </div>
+    
+                <div class="taskpanel">
+                    <a>Define Box and Solvate the System </a>
+                </div>
+    
+                <div class="taskpanel">
+                    <a>Add Ions</a>
+                </div>
+    
+                <div class="taskpanel">
+                    <a>Equilibrate System</a>
+                </div>
+    
+                <div class="taskpanel">
+                    <a>Run Simulation</a>
+                </div>
             </div>
 
             <div class="bottomToolPanel">
                 <h1>STRUCTURE HIERARCHY</h1>
-                <div id="structureInfo" style="font-size: 16px; color: #ffffff33; margin-left: 10px;">
+                <div id="structureInfo" style="font-size: 14px; color: #ffffff33; margin-left: 10px;">
                     No structure file available.
                 </div>
             </div>

@@ -1,3 +1,13 @@
+function manual() {
+    document.getElementById("askSimType").style.display="none"
+    document.getElementById("simulationTask").style.display="block"
+}
+
+function automated() {
+    document.getElementById("askSimType").style.display="none"
+    document.getElementById("simulationTask").style.display="block"
+}
+
 function updateHierarchy() {
     let parentDiv = document.getElementById("structureInfo");
     const model = viewer.getModel();

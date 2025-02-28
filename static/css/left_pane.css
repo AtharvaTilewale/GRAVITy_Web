@@ -22,6 +22,47 @@
     margin-left: 5px;
 }
 
+.askSimType {
+    margin: 20% 10% 0% 10%;
+    padding: 10px;
+    text-align: center;
+    color: #ffffff77;
+    font-family: sans-serif;
+    position: absolute;
+    background-color: #11111144;
+    border-radius: 10px;
+}
+
+.askSimType h3 {
+    font-size: 18px;
+    margin: 7px;
+    font-family: sans-serif;
+}
+
+.askSimType h5 {
+    font-size: 14px;
+}
+
+.askSimType a {
+    font-size: 13px;
+}
+
+.askSimType button {
+    padding: 10px;
+    display: inline;
+    border-radius: 7px;
+    background-color: #373737;
+    color: rgba(255, 255, 255, 0.742);
+    cursor: pointer;
+    border: none;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.askSimType button:hover {
+    background-color: #252525;
+}
+
 .bottomToolPanel {
     width: 100%;
     height: 30%;
