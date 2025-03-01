@@ -9,17 +9,81 @@
 
 .taskpanel {
     width: auto;
-    height: 30px;
+    height: auto;
     margin: 10px;
-    border-bottom: 1px solid #333;
-    background-color: transparent;
-    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    background-color: #11111133;
+    padding: 15px;
+}
+
+.taskpanel h3 {
+    color: #ffffffdd;
+    font-size: 14px;
+    font-weight: normal;
 }
 
 .taskpanel a {
+    font-size: 12px;
+    color: #ffffffdd;
+}
+
+.taskpanel label {
     color: #ffffffdd;
     font-size: 12px;
-    margin-left: 5px;
+}
+
+.taskpanel input {
+    background-color: #353535;
+    border: none;
+    height: 30px;
+    color: #ffffff99
+}
+
+.taskpanel input:active {
+    background-color: #353535;
+}
+
+.taskpanel .tooltip {
+    color: #ffffff99;
+}
+
+.taskpanel .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 150px;
+    background-color: #555;
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    transform: translateX(-50%);
+    margin-left: -700%;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.taskpanel .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+.taskpanel button {
+    padding: 10px;
+    border-radius: 7px;
+    background-color: #373737;
+    color: rgba(255, 255, 255, 0.742);
+    cursor: pointer;
+    border: none;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.taskpanel button:hover {
+    background-color: #252525;
 }
 
 .askSimType {
@@ -29,7 +93,7 @@
     color: #ffffff77;
     font-family: sans-serif;
     position: absolute;
-    background-color: #11111144;
+    background-color: #11111133;
     border-radius: 10px;
 }
 
