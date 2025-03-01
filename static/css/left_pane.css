@@ -47,7 +47,8 @@
     background-color: #353535;
     border: none;
     height: 30px;
-    color: #ffffff99
+    color: #ffffff99;
+    font-size: 12px;
 }
 
 .taskpanel input:active {
@@ -58,7 +59,8 @@
     background-color: #353535;
     border: none;
     height: 30px;
-    color: #ffffff99
+    color: #ffffff99;
+    font-size: 12px;
 }
 
 .taskpanel select:active {
