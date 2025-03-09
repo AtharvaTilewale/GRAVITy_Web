@@ -89,7 +89,7 @@
                     <div class="form-row">
                         <label for="pdb_id">Enter PDB ID</label>
                         <div class="input-container">
-                            <input type="text" id="pdbInput" name="pdb_id" placeholder="1HNY" required>
+                            <input type="text" id="pdbInputManual" name="pdb_id" placeholder="1HNY" required>
                             <span class="tooltip">?
                                 <span class="tooltiptext">Input PDB ID for Protein</span>
                             </span>
@@ -258,13 +258,13 @@
                         <div class="form-row">
                             <label for="pdb_id">Enter PDB ID</label>
                             <div class="input-container">
-                                <input type="text" id="pdbInput" name="pdb_id" placeholder="1HNY" required>
+                                <input type="text" id="pdbInputAuto" name="pdb_id" placeholder="1HNY" required>
                                 <span class="tooltip">?
                                     <span class="tooltiptext">Input PDB ID for Protein</span>
                                 </span>
                             </div>
                         </div>
-                        <button class="fetchBtn" onclick="fetchPDB()">Fetch</button>
+                        <button class="fetchBtn" type="button" onclick="fetchPDB()">Fetch</button>
                         
                         <a style="text-align: center; justify-content: center; display: block; margin-top: 15px;">OR</a>
                         <a style="text-align: center; justify-content: center; display: block; margin-top: 15px;">Import the protein structure file from your local machine (PDB/PDBQT) </a>
@@ -457,7 +457,7 @@
         <div class="form-row">
             <label for="pdb_id">Enter PDB ID</label>
             <div class="input-container">
-                <input type="text" id="pdbInput" name="pdb_id" placeholder="1SMD" required>
+                <input type="text" id="pdbInputNavbar" name="pdb_id" placeholder="1SMD" required>
                 <span class="tooltip">?
                     <span class="tooltiptext">Input PDB ID for Protein</span>
                 </span>

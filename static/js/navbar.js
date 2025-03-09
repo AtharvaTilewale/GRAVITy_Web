@@ -56,7 +56,10 @@ function closeModal() {
 //Fetch PDB using PDB ID and show in visualizer
 
 function fetchPDB() {
-    let pdbId = document.getElementById("pdbInput").value.trim();
+    let pdbId = (document.getElementById("pdbInputNavbar")?.value.trim() || 
+                 document.getElementById("pdbInputManual")?.value.trim() || 
+                 document.getElementById("pdbInputAuto")?.value.trim() || 
+                 "").trim();
     if (!pdbId) {
         alert("Please enter a valid PDB ID");
         return;
